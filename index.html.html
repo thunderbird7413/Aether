@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aether Chamber</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Inter"', 'sans-serif'],
+                        heading: ['"Outfit"', 'sans-serif'],
+                    },
+                    colors: {
+                        deep: {
+                            900: '#030014',
+                            800: '#0a0a2a',
+                            700: '#141440',
+                        },
+                        aurora: {
+                            cyan: '#06b6d4',
+                            purple: '#a855f7',
+                            pink: '#ec4899',
+                        }
+                    },
+                    animation: {
+                        'blob': 'blob 15s infinite',
+                        'blob-reverse': 'blob 20s infinite reverse',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin-slow': 'spin 8s linear infinite',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #030014;
+            color: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .glass-panel {
+            background: rgba(20, 20, 40, 0.3);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .glass-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px -1px rgba(0, 0, 0, 0.3), 0 0 15px rgba(168, 85, 247, 0.1);
+        }
+
+        .glass-input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .glass-input:focus {
+            outline: none;
+            border-color: rgba(168, 85, 247, 0.5);
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+        }
+
+        .glass-btn {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(6, 182, 212, 0.2));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+        }
+
+        .glass-btn:hover {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.4), rgba(6, 182, 212, 0.4));
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+        }
+
+        .cb-ethereal {
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .cb-ethereal:checked {
+            background: linear-gradient(135deg, #a855f7, #06b6d4);
+            border-color: transparent;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+        }
+
+        .cb-ethereal:checked::after {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 3px;
+            width: 6px;
+            height: 12px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .completed-text {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .animate-fade {
+            animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex text-sm sm:text-base font-sans relative">
+
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div
+            class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-aurora-purple/20 blur-[120px] mix-blend-screen animate-blob">
+        </div>
+        <div
+            class="absolute top-[20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-aurora-cyan/10 blur-[120px] mix-blend-screen animate-blob-reverse animation-delay-2000">
+        </div>
+        <div
+            class="absolute bottom-[-20%] left-[20%] w-[60%] h-[60%] rounded-full bg-aurora-pink/10 blur-[120px] mix-blend-screen animate-blob animation-delay-4000">
+        </div>
+    </div>
+
+    <aside id="sidebar"
+        class="w-20 md:w-64 glass-panel border-r-0 border-r border-white/5 flex flex-col fixed inset-y-0 z-40 transition-all duration-300">
+        <div
+            class="h-24 flex items-center justify-center md:justify-start md:px-8 border-b border-white/5 relative overflow-hidden group">
+            <svg class="w-10 h-10 animate-spin-slow drop-shadow-[0_0_8px_rgba(168,85,247,0.8)] shrink-0"
+                viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M50 10 L90 50 L50 90 L10 50 Z" stroke="url(#paint0_linear)" stroke-width="4"
+                    stroke-linejoin="round" />
+                <circle cx="50" cy="50" r="20" stroke="url(#paint1_linear)" stroke-width="4" />
+                <circle cx="50" cy="50" r="8" fill="url(#paint2_linear)" class="animate-pulse-slow" />
+                <defs>
+                    <linearGradient id="paint0_linear" x1="10" y1="50" x2="90" y2="50" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#a855f7" />
+                        <stop offset="1" stop-color="#06b6d4" />
+                    </linearGradient>
+                    <linearGradient id="paint1_linear" x1="30" y1="50" x2="70" y2="50" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#06b6d4" />
+                        <stop offset="1" stop-color="#ec4899" />
+                    </linearGradient>
+                    <linearGradient id="paint2_linear" x1="42" y1="50" x2="58" y2="50" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#fff" />
+                        <stop offset="1" stop-color="#a855f7" />
+                    </linearGradient>
+                </defs>
+            </svg>
+            <span
+                class="hidden md:block ml-4 font-heading font-bold text-2xl tracking-wide text-white drop-shadow-md whitespace-nowrap">Aether
+                Vault</span>
+        </div>
+
+        <nav class="flex-1 py-8 flex flex-col gap-3 px-4">
+            <button onclick="switchTab('add-question')" id="nav-add-question"
+                class="nav-btn flex items-center justify-center md:justify-start gap-4 p-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group relative">
+                <div
+                    class="nav-indicator absolute left-0 w-1 h-full bg-gradient-to-b from-aurora-purple to-aurora-cyan rounded-r-md opacity-0 transition-opacity">
+                </div>
+                <i class="ph ph-plus-circle text-2xl group-hover:text-aurora-cyan transition-colors"></i>
+                <span class="hidden md:block font-medium tracking-wide whitespace-nowrap">Add Entry</span>
+            </button>
+            <button onclick="switchTab('vault')" id="nav-vault"
+                class="nav-btn active-nav flex items-center justify-center md:justify-start gap-4 p-3 rounded-xl text-white bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.05)] transition-all group relative border border-white/5">
+                <div
+                    class="nav-indicator absolute left-0 w-1 h-full bg-gradient-to-b from-aurora-purple to-aurora-cyan rounded-r-md opacity-100 transition-opacity">
+                </div>
+                <i class="ph ph-books text-2xl text-aurora-purple"></i>
+                <span class="hidden md:block font-medium tracking-wide whitespace-nowrap">The Vault</span>
+            </button>
+            <button onclick="switchTab('planner')" id="nav-planner"
+                class="nav-btn flex items-center justify-center md:justify-start gap-4 p-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group relative">
+                <div
+                    class="nav-indicator absolute left-0 w-1 h-full bg-gradient-to-b from-aurora-purple to-aurora-cyan rounded-r-md opacity-0 transition-opacity">
+                </div>
+                <i class="ph ph-calendar-check text-2xl group-hover:text-aurora-pink transition-colors"></i>
+                <span class="hidden md:block font-medium tracking-wide whitespace-nowrap">Daily Planner</span>
+            </button>
+            <button onclick="switchTab('memory')" id="nav-memory"
+                class="nav-btn flex items-center justify-center md:justify-start gap-4 p-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group relative">
+                <div
+                    class="nav-indicator absolute left-0 w-1 h-full bg-gradient-to-b from-aurora-purple to-aurora-cyan rounded-r-md opacity-0 transition-opacity">
+                </div>
+                <i class="ph ph-infinity text-2xl group-hover:text-aurora-cyan transition-colors"></i>
+                <span class="hidden md:block font-medium tracking-wide whitespace-nowrap">Eternal Memory</span>
+            </button>
+        </nav>
+
+        <div
+            class="p-5 border-t border-white/5 flex flex-col gap-2 items-center md:items-start text-xs text-gray-400 bg-black/20">
+            <div class="flex items-center gap-3">
+                <div class="relative flex h-2.5 w-2.5">
+                    <span id="conn-ping"
+                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-aurora-cyan opacity-75"></span>
+                    <span id="conn-dot" class="relative inline-flex rounded-full h-2.5 w-2.5 bg-aurora-cyan"></span>
+                </div>
+                <span class="hidden md:block font-medium tracking-wider uppercase text-[10px]" id="conn-text">Syncing
+                    DB</span>
+            </div>
+        </div>
+    </aside>
+
+    <main id="main-content"
+        class="flex-1 ml-20 md:ml-64 flex flex-col h-screen overflow-hidden relative z-10 transition-all duration-300">
+        <div id="loader"
+            class="absolute inset-0 z-50 glass-panel flex flex-col justify-center items-center text-white transition-opacity duration-500 rounded-none">
+            <svg class="w-16 h-16 animate-spin drop-shadow-lg mb-6" viewBox="0 0 100 100" fill="none"
+                xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.1)" stroke-width="8" />
+                <path d="M50 10 A40 40 0 0 1 90 50" stroke="url(#paint0_linear)" stroke-width="8"
+                    stroke-linecap="round" />
+            </svg>
+            <span
+                class="font-heading font-medium tracking-[0.2em] text-sm uppercase text-aurora-cyan animate-pulse">Initializing
+                Aether Vault</span>
+            <span id="loader-subtitle" class="text-xs text-gray-500 mt-2 font-medium tracking-widest hidden">Seeding the
+                Vault...</span>
+        </div>
+
+        <header
+            class="h-24 shrink-0 flex items-center justify-between px-6 lg:px-12 backdrop-blur-md bg-transparent border-b border-white/5 sticky top-0 z-20">
+            <div class="flex items-center gap-4">
+                <button id="sidebar-toggle"
+                    class="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white transition-all shrink-0 focus:outline-none"
+                    title="Toggle Sidebar">
+                    <i class="ph-bold ph-list text-xl"></i>
+                </button>
+                <h2 id="page-title"
+                    class="text-2xl md:text-3xl font-heading font-semibold text-white tracking-wide drop-shadow-md">The
+                    Vault</h2>
+            </div>
+            <div id="header-search" class="relative w-48 md:w-72 lg:w-96 transition-all duration-300 opacity-100">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i class="ph ph-magnifying-glass text-gray-400 text-lg"></i>
+                </div>
+                <input type="text" id="search-input" placeholder="Search the cosmos..."
+                    class="glass-input w-full pl-12 pr-4 py-3 rounded-2xl text-white placeholder-gray-500 font-medium tracking-wide">
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-6 lg:p-12 relative pb-32">
+            <section id="sec-add-question" class="hidden max-w-3xl mx-auto animate-fade">
+                <div class="glass-card rounded-3xl p-8 lg:p-12 relative overflow-hidden">
+                    <div
+                        class="absolute top-0 right-0 w-64 h-64 bg-aurora-purple/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 pointer-events-none">
+                    </div>
+                    <div class="mb-10">
+                        <h3 class="text-3xl font-heading font-bold text-white mb-3">Materialize a Thought</h3>
+                        <p class="text-gray-400">Add a new question or concept to your knowledge base.</p>
+                    </div>
+                    <form id="form-add-q" class="space-y-8 relative z-10">
+                        <div class="space-y-2">
+                            <label
+                                class="block text-xs font-bold text-aurora-cyan uppercase tracking-widest ml-1">Question
+                                / Title</label>
+                            <input type="text" id="add-q-title" required
+                                placeholder="e.g., Minimum Number of Taps to Open to Water a Garden"
+                                class="glass-input w-full px-5 py-4 rounded-xl text-lg font-medium">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="space-y-2">
+                                <label
+                                    class="block text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Topic
+                                    Realm</label>
+                                <input type="text" id="add-q-topic" placeholder="e.g., Greedy"
+                                    class="glass-input w-full px-5 py-3.5 rounded-xl">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">Tags
+                                    (Comma separated)</label>
+                                <input type="text" id="add-q-tags" placeholder="e.g., intervals, hard"
+                                    class="glass-input w-full px-5 py-3.5 rounded-xl">
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 pt-2 bg-white/5 p-4 rounded-xl border border-white/5 w-fit">
+                            <input type="checkbox" id="add-q-imp" class="cb-ethereal">
+                            <label for="add-q-imp"
+                                class="text-sm font-medium text-gray-200 cursor-pointer select-none">Mark as High
+                                Priority (Important)</label>
+                        </div>
+                        <div class="pt-8">
+                            <button type="submit"
+                                class="glass-btn w-full py-4 rounded-xl text-white font-bold text-lg flex items-center justify-center gap-3 tracking-wide">
+                                <i class="ph-bold ph-sparkle"></i> Add to Vault
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <section id="sec-vault" class="block animate-fade max-w-6xl mx-auto">
+                <div id="vault-empty" class="hidden flex-col items-center justify-center py-32 opacity-60">
+                    <div class="relative mb-6">
+                        <div class="absolute inset-0 bg-aurora-purple/20 blur-xl rounded-full"></div>
+                        <i class="ph-thin ph-planet text-7xl text-gray-400 relative z-10"></i>
+                    </div>
+                    <h4 class="text-xl font-heading font-medium text-white mb-2">The void is empty</h4>
+                    <p class="text-gray-400 text-sm">Materialize a thought to begin filling your vault.</p>
+                </div>
+                <div id="vault-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Cards injected here via JS -->
+                </div>
+            </section>
+
+            <section id="sec-planner" class="hidden animate-fade max-w-4xl mx-auto">
+                <div class="glass-card rounded-3xl p-8 lg:p-12 relative overflow-hidden">
+                    <div
+                        class="absolute top-[-10%] left-[-10%] w-64 h-64 bg-aurora-cyan/10 rounded-full blur-[80px] pointer-events-none">
+                    </div>
+
+                    <div
+                        class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6 border-b border-white/10 pb-8 relative z-10">
+                        <div>
+                            <h3 class="text-4xl md:text-5xl font-heading font-bold text-white tracking-tight mb-2"
+                                id="today-date"></h3>
+                            <p class="text-aurora-cyan font-medium tracking-wide uppercase text-xs">Execute your vision
+                            </p>
+                        </div>
+                        <div
+                            class="flex items-center gap-4 bg-black/20 p-4 rounded-2xl border border-white/5 shadow-inner">
+                            <div class="text-right">
+                                <span class="text-3xl font-heading font-bold text-white" id="todo-percent">0%</span>
+                                <div class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold mt-1">
+                                    Completed</div>
+                            </div>
+                            <div class="relative w-12 h-12">
+                                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                    <path class="text-white/10"
+                                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                        fill="none" stroke="currentColor" stroke-width="3" />
+                                    <path id="todo-ring" class="text-aurora-purple transition-all duration-500 ease-out"
+                                        stroke-dasharray="0, 100"
+                                        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                        fill="none" stroke="currentColor" stroke-width="3" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form id="form-add-todo" class="mb-10 flex gap-4 relative z-10">
+                        <div class="relative flex-1 group">
+                            <input type="text" id="input-todo" required
+                                placeholder="Define a new objective (or type a large goal and use the Magic Wand)..."
+                                class="glass-input w-full pl-6 pr-14 py-4 rounded-2xl text-lg font-medium shadow-inner">
+                            <button type="submit"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-gray-300 hover:text-white transition-all">
+                                <i class="ph-bold ph-paper-plane-right text-lg"></i>
+                            </button>
+                        </div>
+                        <button type="button" id="btn-ai-breakdown"
+                            class="w-14 shrink-0 rounded-2xl glass-btn flex items-center justify-center text-white shadow-lg group relative overflow-hidden"
+                            title="Break down task with AI">
+                            <div
+                                class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                            </div>
+                            <i class="ph-fill ph-magic-wand text-2xl relative z-10 drop-shadow-md"></i>
+                        </button>
+                    </form>
+
+                    <div id="todo-list" class="space-y-4 relative z-10">
+                        <!-- Todos injected here -->
+                    </div>
+                </div>
+            </section>
+
+            <section id="sec-memory" class="hidden animate-fade max-w-5xl mx-auto">
+                <div class="glass-card rounded-3xl p-8 lg:p-10 mb-12 relative overflow-hidden">
+                    <div
+                        class="absolute inset-0 bg-gradient-to-r from-aurora-cyan/10 to-transparent pointer-events-none">
+                    </div>
+                    <div class="relative z-10">
+                        <h3 class="text-2xl font-heading font-bold text-white mb-6 flex items-center gap-3">
+                            <i class="ph-fill ph-infinity text-aurora-cyan text-3xl drop-shadow-md"></i> Solidify into
+                            Eternity
+                        </h3>
+                        <form id="form-add-mem">
+                            <textarea id="input-mem" required
+                                placeholder="Record vital architectures, profound insights, or unbreakable rules here. They will remain in the ether forever."
+                                class="glass-input w-full p-6 rounded-2xl text-gray-100 min-h-[160px] resize-y mb-6 text-lg leading-relaxed shadow-inner"></textarea>
+                            <div class="flex justify-end">
+                                <button type="submit"
+                                    class="glass-btn px-8 py-3.5 rounded-xl text-white font-bold flex items-center gap-3 tracking-wide">
+                                    Commit Memory <i class="ph-bold ph-check"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6" id="mem-grid">
+                    <!-- Memories injected here -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="modal-note"
+        class="fixed inset-0 z-50 bg-black/40 backdrop-blur-md hidden flex items-center justify-center opacity-0 transition-opacity duration-300 p-4">
+        <div class="glass-card w-full max-w-3xl rounded-3xl flex flex-col transform scale-95 transition-transform duration-300 overflow-hidden relative"
+            id="modal-note-content">
+            <div
+                class="absolute top-[-20%] left-[50%] -translate-x-1/2 w-[80%] h-[40%] bg-aurora-purple/20 blur-[100px] pointer-events-none">
+            </div>
+            <div
+                class="flex justify-between items-center p-6 lg:p-8 border-b border-white/10 relative z-10 bg-black/20">
+                <div>
+                    <h4 class="text-white font-heading font-bold text-xl md:text-2xl mb-1 drop-shadow-sm pr-4"
+                        id="modal-q-title">Question Title</h4>
+                    <span
+                        class="text-xs text-aurora-cyan font-bold tracking-widest uppercase bg-aurora-cyan/10 px-3 py-1 rounded-full border border-aurora-cyan/20 inline-block mt-2"
+                        id="modal-q-topic">Topic</span>
+                </div>
+                <button onclick="closeModal()"
+                    class="w-10 h-10 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/10 transition-colors shrink-0">
+                    <i class="ph-bold ph-x text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6 lg:p-8 flex-1 relative z-10">
+                <textarea id="modal-textarea"
+                    placeholder="Inscribe your detailed notes, code blocks, or references here..."
+                    class="glass-input w-full h-64 md:h-80 p-6 rounded-2xl resize-none text-base leading-relaxed"></textarea>
+            </div>
+
+            <div
+                class="p-5 lg:p-6 border-t border-white/10 flex justify-end gap-3 sm:gap-4 bg-black/40 items-center relative z-10 flex-wrap sm:flex-nowrap">
+                <button id="modal-ai-btn" type="button"
+                    class="px-5 py-2.5 rounded-xl text-white font-medium flex items-center justify-center gap-2 mr-auto bg-gradient-to-r from-aurora-purple/30 to-aurora-purple/10 border border-aurora-purple/30 hover:bg-aurora-purple/40 transition-all shadow-[0_0_15px_rgba(168,85,247,0.1)] w-full sm:w-auto mb-3 sm:mb-0"
+                    title="Generate AI Answer">
+                    <i class="ph-fill ph-magic-wand text-aurora-purple text-lg"></i> Summon AI Answer
+                </button>
+                <button onclick="closeModal()"
+                    class="px-6 py-2.5 rounded-xl text-gray-300 font-medium hover:text-white hover:bg-white/5 transition-colors">Dismiss</button>
+                <button id="modal-save-btn"
+                    class="glass-btn px-8 py-2.5 rounded-xl text-white font-bold flex items-center gap-2">
+                    <i class="ph-bold ph-floppy-disk text-lg"></i> Preserve
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast"
+        class="fixed bottom-8 right-8 z-[60] py-4 px-6 rounded-2xl glass-card flex items-center gap-4 transform translate-y-24 opacity-0 transition-all duration-400 border-l-4 border-l-aurora-cyan">
+        <div id="toast-icon" class="text-2xl drop-shadow-md"></div>
+        <span id="toast-msg" class="text-base font-medium text-white tracking-wide"></span>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBmMKyS0FbWKxpWqVDXyzr3Zk7dxF2c5Vo",
+            authDomain: "career-path-finder-447012.firebaseapp.com",
+            projectId: "career-path-finder-447012",
+            storageBucket: "career-path-finder-447012.firebasestorage.app",
+            messagingSenderId: "907934808027",
+            appId: "1:907934808027:web:43d7061ae5fe6c3ed599fe",
+            measurementId: "G-WZJHH2SNTL"
+        };
+
+        const appId = 'aether-vault-dsa';
+        const initialAuthToken = null;
+
+        let db, auth, currentUser;
+        let state = { questions: [], todos: [], memories: [] };
+        let activeTab = 'vault';
+        let currentEditingQId = null;
+        let hasInitializedDB = false;
+        let dbSeedingInProgress = false;
+        let isSidebarHidden = localStorage.getItem('sidebarHidden') === 'true';
+
+        // Data for auto-initialization (The 25 requested problems)
+        const PREDEFINED_QUESTIONS = [
+            { title: "Minimum Number of Taps to Open to Water a Garden", tags: ["Greedy", "intervals"], isImportant: true },
+            { title: "Collect Coins in a Tree", tags: ["Tree pruning"], isImportant: true },
+            { title: "Longest Cycle in a Graph", tags: ["Functional graph", "Topo"], isImportant: true },
+            { title: "Maximum Employees to Be Invited to a Meeting", tags: ["Functional graph", "Topo", "cycles"], isImportant: true },
+            { title: "Possible Bipartition", tags: ["Bipartite graph"], isImportant: true },
+            { title: "Is Graph Bipartite?", tags: ["Bipartite BFS", "DFS"], isImportant: true },
+            { title: "Minimum Obstacle Removal to Reach Corner", tags: ["0-1 BFS"], isImportant: true },
+            { title: "Shortest Path to Get All Keys", tags: ["BFS", "Bitmask"], isImportant: true },
+            { title: "Number of Good Paths", tags: ["DSU", "sorting"], isImportant: true },
+            { title: "Largest Component Size by Common Factor", tags: ["DSU", "number theory"], isImportant: true },
+            { title: "Minimum Edge Reversals So Every Node Is Reachable", tags: ["Rerooting DP"], isImportant: true },
+            { title: "Sum of Distances in Tree", tags: ["Rerooting DP"], isImportant: true },
+            { title: "CF 219D", tags: ["Rerooting DP"], isImportant: true },
+            { title: "CF 1324F", tags: ["Rerooting DP"], isImportant: true },
+            { title: "Bricks Falling When Hit", tags: ["Reverse DSU"], isImportant: true },
+            { title: "CF 1213G", tags: ["DSU", "sorting"], isImportant: true },
+            { title: "CF 1242B", tags: ["Complement graph", "Set"], isImportant: true },
+            { title: "Reconstruct Itinerary", tags: ["Eulerian path"], isImportant: true },
+            { title: "Valid Arrangement of Pairs", tags: ["Eulerian path"], isImportant: true },
+            { title: "Minimum Height Trees", tags: ["Tree pruning", "BFS"], isImportant: true },
+            { title: "Cheapest Flights Within K Stops", tags: ["Modified Dijkstra", "BFS"], isImportant: true },
+            { title: "Number of Ways to Arrive at Destination", tags: ["Dijkstra", "counting"], isImportant: true },
+            { title: "Rank Transform of a Matrix", tags: ["DSU", "graph", "ordering"], isImportant: true },
+            { title: "Longest Increasing Path in a Matrix", tags: ["Topological sort", "DP"], isImportant: true },
+            { title: "Parallel Courses II", tags: ["Bitmask DP"], isImportant: true }
+        ];
+
+        async function callGemini(prompt, isJson = false, retries = 3) {
+            let delay = 1000;
+            for (let i = 0; i < retries; i++) {
+                try {
+                    // Call your secure Vercel backend instead of Google
+                    const response = await fetch('/api/gemini', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ prompt, isJson })
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || `HTTP Error: ${response.status}`);
+                    }
+
+                    // Return the text reply sent from the backend
+                    return data.reply;
+
+                } catch (err) {
+                    if (i === retries - 1) throw err;
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        // Cache DOM Elements for performance
+        const DOM = {
+            sidebar: document.getElementById('sidebar'),
+            mainContent: document.getElementById('main-content'),
+            sidebarToggle: document.getElementById('sidebar-toggle'),
+            loader: document.getElementById('loader'),
+            loaderSub: document.getElementById('loader-subtitle'),
+            connPing: document.getElementById('conn-ping'),
+            connDot: document.getElementById('conn-dot'),
+            connText: document.getElementById('conn-text'),
+            headerSearch: document.getElementById('header-search'),
+            searchInput: document.getElementById('search-input'),
+            pageTitle: document.getElementById('page-title'),
+            secs: { add: document.getElementById('sec-add-question'), vault: document.getElementById('sec-vault'), planner: document.getElementById('sec-planner'), memory: document.getElementById('sec-memory') },
+            containers: { vaultGrid: document.getElementById('vault-grid'), vaultEmpty: document.getElementById('vault-empty'), todoList: document.getElementById('todo-list'), memGrid: document.getElementById('mem-grid') },
+            modal: { wrap: document.getElementById('modal-note'), content: document.getElementById('modal-note-content'), title: document.getElementById('modal-q-title'), topic: document.getElementById('modal-q-topic'), textarea: document.getElementById('modal-textarea'), saveBtn: document.getElementById('modal-save-btn'), aiBtn: document.getElementById('modal-ai-btn') }
+        };
+
+        async function init() {
+            setDates();
+            if (!firebaseConfig) { showToast("Missing Firebase Configuration.", "error"); hideLoader(); return; }
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                if (initialAuthToken) await signInWithCustomToken(auth, initialAuthToken);
+                else await signInAnonymously(auth);
+
+                currentUser = auth.currentUser;
+                DOM.connPing.classList.replace('bg-aurora-cyan', 'bg-green-500');
+                DOM.connDot.classList.replace('bg-aurora-cyan', 'bg-green-500');
+                DOM.connText.textContent = 'Synchronized';
+                DOM.connText.classList.replace('text-gray-400', 'text-green-400');
+                setupListeners();
+            } catch (err) {
+                console.error("Initialization Error:", err);
+                DOM.connPing.classList.replace('bg-aurora-cyan', 'bg-red-500');
+                DOM.connDot.classList.replace('bg-aurora-cyan', 'bg-red-500');
+                DOM.connText.textContent = 'Disconnected';
+                hideLoader();
+                showToast("Connection failed", "error");
+            }
+        }
+
+        let loadedCollections = 0;
+        function checkLoadComplete() {
+            loadedCollections++;
+            if (loadedCollections >= 3 && !dbSeedingInProgress) hideLoader();
+        }
+
+        function hideLoader() {
+            DOM.loader.classList.add('opacity-0');
+            setTimeout(() => DOM.loader.classList.add('hidden'), 500);
+        }
+
+        function updateSidebarUI() {
+            if (isSidebarHidden) {
+                DOM.sidebar.classList.add('-translate-x-full');
+                DOM.mainContent.classList.remove('ml-20', 'md:ml-64');
+                DOM.mainContent.classList.add('ml-0');
+            } else {
+                DOM.sidebar.classList.remove('-translate-x-full');
+                DOM.mainContent.classList.remove('ml-0');
+                DOM.mainContent.classList.add('ml-20', 'md:ml-64');
+            }
+        }
+
+        DOM.sidebarToggle.addEventListener('click', () => {
+            isSidebarHidden = !isSidebarHidden;
+            localStorage.setItem('sidebarHidden', isSidebarHidden);
+            updateSidebarUI();
+        });
+
+        async function seedDatabaseIfEmpty() {
+            if (hasInitializedDB) return;
+            hasInitializedDB = true; // prevent re-entry
+
+            if (state.questions.length === 0) {
+                dbSeedingInProgress = true;
+                DOM.loaderSub.classList.remove('hidden');
+                console.log("Vault is empty. Auto-initializing 25 problems...");
+
+                try {
+                    const batchPromises = PREDEFINED_QUESTIONS.map((q, index) => {
+                        return addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'questions'), {
+                            title: q.title,
+                            topic: "DSA / Advanced",
+                            tags: q.tags,
+                            isImportant: q.isImportant,
+                            notes: "",
+                            createdAt: Date.now() + index // Ensure slight order difference
+                        });
+                    });
+
+                    await Promise.all(batchPromises);
+                    console.log("Seeding complete.");
+                    showToast("Vault initialized with 25 master problems", "success");
+                } catch (err) {
+                    console.error("Failed to seed database:", err);
+                    showToast("Error initializing vault data", "error");
+                } finally {
+                    dbSeedingInProgress = false;
+                    hideLoader();
+                }
+            } else {
+                // If it already has data, just hide loader
+                hideLoader();
+            }
+        }
+
+        function setupListeners() {
+            if (!currentUser) return;
+            const uid = currentUser.uid;
+
+            let isFirstQuestionLoad = true;
+            onSnapshot(collection(db, 'artifacts', appId, 'users', uid, 'questions'), (snap) => {
+                state.questions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+                if (isFirstQuestionLoad) {
+                    isFirstQuestionLoad = false;
+                    seedDatabaseIfEmpty();
+                }
+
+                if (activeTab === 'vault') renderVault();
+                checkLoadComplete();
+            }, (err) => console.error("Questions snap error", err));
+
+            onSnapshot(collection(db, 'artifacts', appId, 'users', uid, 'todos'), (snap) => {
+                state.todos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                if (activeTab === 'planner') renderTodos();
+                checkLoadComplete();
+            }, (err) => console.error("Todos snap error", err));
+
+            onSnapshot(collection(db, 'artifacts', appId, 'users', uid, 'memories'), (snap) => {
+                state.memories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                if (activeTab === 'memory') renderMemories();
+                checkLoadComplete();
+            }, (err) => console.error("Memories snap error", err));
+        }
+
+        window.switchTab = function (tab) {
+            activeTab = tab;
+            Object.values(DOM.secs).forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn flex items-center justify-center md:justify-start gap-4 p-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group relative";
+                btn.querySelector('.nav-indicator').classList.replace('opacity-100', 'opacity-0');
+                const i = btn.querySelector('i'); i.className = i.className.replace(/text-aurora-\w+/, '');
+            });
+            const activeBtn = document.getElementById(`nav-${tab}`);
+            activeBtn.className = "nav-btn active-nav flex items-center justify-center md:justify-start gap-4 p-3 rounded-xl text-white bg-white/10 shadow-[0_0_15px_rgba(255,255,255,0.05)] transition-all group relative border border-white/5";
+            activeBtn.querySelector('.nav-indicator').classList.replace('opacity-0', 'opacity-100');
+            const icon = activeBtn.querySelector('i');
+            if (tab === 'vault') icon.classList.add('text-aurora-purple');
+            if (tab === 'add-question') icon.classList.add('text-aurora-cyan');
+            if (tab === 'planner') icon.classList.add('text-aurora-pink');
+            if (tab === 'memory') icon.classList.add('text-aurora-cyan');
+
+            if (tab === 'add-question') { DOM.secs.add.classList.remove('hidden'); DOM.pageTitle.textContent = "Log Entry"; DOM.headerSearch.classList.replace('opacity-100', 'opacity-0'); }
+            else if (tab === 'vault') { DOM.secs.vault.classList.remove('hidden'); DOM.pageTitle.textContent = "The Vault"; DOM.headerSearch.classList.replace('opacity-0', 'opacity-100'); renderVault(); }
+            else if (tab === 'planner') { DOM.secs.planner.classList.remove('hidden'); DOM.pageTitle.textContent = "Daily Planner"; DOM.headerSearch.classList.replace('opacity-100', 'opacity-0'); renderTodos(); }
+            else if (tab === 'memory') { DOM.secs.memory.classList.remove('hidden'); DOM.pageTitle.textContent = "Eternal Memory"; DOM.headerSearch.classList.replace('opacity-100', 'opacity-0'); renderMemories(); }
+        };
+
+        DOM.searchInput.addEventListener('input', () => { if (activeTab === 'vault') renderVault(); });
+
+        function renderVault() {
+            const query = DOM.searchInput.value.toLowerCase();
+            let filtered = state.questions.filter(q => {
+                const text = `${q.title} ${q.topic} ${(q.tags || []).join(' ')}`.toLowerCase();
+                return text.includes(query);
+            });
+            filtered.sort((a, b) => {
+                if (a.isImportant && !b.isImportant) return -1;
+                if (!a.isImportant && b.isImportant) return 1;
+                return b.createdAt - a.createdAt;
+            });
+            if (filtered.length === 0) {
+                DOM.containers.vaultGrid.innerHTML = ''; DOM.containers.vaultEmpty.classList.remove('hidden'); DOM.containers.vaultEmpty.classList.add('flex'); return;
+            }
+            DOM.containers.vaultEmpty.classList.add('hidden'); DOM.containers.vaultEmpty.classList.remove('flex');
+            DOM.containers.vaultGrid.innerHTML = filtered.map(q => {
+                const tagHTML = (q.tags || []).map(t => `<span class="px-2.5 py-1 text-[10px] uppercase font-bold tracking-widest bg-white/5 border border-white/10 rounded-lg text-gray-300 whitespace-nowrap">${escapeHTML(t)}</span>`).join('');
+                const hasNotes = q.notes && q.notes.trim().length > 0;
+                return `
+                <div class="glass-card rounded-2xl p-6 flex flex-col gap-5 relative group overflow-hidden">
+                    ${q.isImportant ? '<div class="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>' : ''}
+                    <div class="flex justify-between items-start gap-4 relative z-10">
+                        <div class="flex-1">
+                            <div class="text-[10px] uppercase font-bold ${q.isImportant ? 'text-amber-400' : 'text-aurora-cyan'} mb-2 tracking-widest flex items-center gap-1.5">
+                                ${q.isImportant ? '<i class="ph-fill ph-star"></i>' : '<i class="ph-bold ph-folder"></i>'} ${escapeHTML(q.topic || 'General')}
+                            </div>
+                            <h4 class="text-lg font-heading font-medium text-white leading-snug mb-4">${escapeHTML(q.title)}</h4>
+                            <div class="flex flex-wrap gap-2">${tagHTML}</div>
+                        </div>
+                        <div class="flex flex-col gap-2 items-center shrink-0">
+                            <button onclick="toggleImportant('${q.id}', ${q.isImportant})" class="w-10 h-10 flex items-center justify-center rounded-xl bg-black/20 border border-white/5 hover:bg-white/10 transition-all ${q.isImportant ? 'text-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.2)] border-amber-500/30' : 'text-gray-500 hover:text-amber-400'}"><i class="${q.isImportant ? 'ph-fill' : 'ph'} ph-star text-xl"></i></button>
+                             <button onclick="deleteDocH('questions', '${q.id}')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-black/20 border border-white/5 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 text-gray-500 transition-all opacity-0 group-hover:opacity-100"><i class="ph ph-trash text-xl"></i></button>
+                        </div>
+                    </div>
+                    <div class="pt-4 border-t border-white/5 flex justify-between items-center mt-auto relative z-10">
+                        <button onclick="openModal('${q.id}')" class="flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl transition-all ${hasNotes ? 'bg-aurora-purple/20 text-aurora-purple border border-aurora-purple/30 hover:bg-aurora-purple/30' : 'bg-white/5 text-gray-300 border border-white/10 hover:bg-white/10 hover:text-white'}"><i class="${hasNotes ? 'ph-fill' : 'ph'} ph-notebook text-lg"></i> ${hasNotes ? 'View Notes' : 'Add Note'}</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function getTodayStr() { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+        function setDates() {
+            const d = new Date(); const dateStr = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+            document.getElementById('today-date').innerHTML = `<span class="text-white">${dateStr.split(',')[0]}</span>, <span class="text-gray-300 font-light">${dateStr.split(',')[1]}</span>`;
+        }
+
+        function renderTodos() {
+            const todayStr = getTodayStr(); let todayTodos = state.todos.filter(t => t.dateString === todayStr);
+            todayTodos.sort((a, b) => { if (a.completed === b.completed) return a.createdAt - b.createdAt; return a.completed ? 1 : -1; });
+            const total = todayTodos.length; const comp = todayTodos.filter(t => t.completed).length; const pct = total === 0 ? 0 : Math.round((comp / total) * 100);
+
+            document.getElementById('todo-percent').textContent = pct + '%';
+            document.getElementById('todo-ring').style.strokeDasharray = `${pct}, 100`;
+
+            if (total === 0) { DOM.containers.todoList.innerHTML = `<div class="text-center py-10 text-gray-500 bg-white/5 border border-dashed border-white/10 rounded-2xl">Your canvas is blank. Define an objective above.</div>`; return; }
+            DOM.containers.todoList.innerHTML = todayTodos.map(t => `
+                <div class="flex items-center gap-4 p-4 lg:p-5 rounded-2xl bg-black/30 border border-white/5 hover:border-white/10 shadow-sm group transition-all duration-300 ${t.completed ? 'opacity-60 bg-black/10' : ''}">
+                    <input type="checkbox" class="cb-ethereal shrink-0" ${t.completed ? 'checked' : ''} onchange="toggleTodo('${t.id}', ${t.completed})">
+                    <span class="flex-1 text-base font-medium ${t.completed ? 'completed-text text-gray-400' : 'text-gray-100'} transition-all">${escapeHTML(t.task)}</span>
+                    <button onclick="deleteDocH('todos', '${t.id}')" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/5 text-gray-500 hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 transition-all opacity-0 group-hover:opacity-100 shrink-0"><i class="ph-bold ph-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function renderMemories() {
+            let sorted = [...state.memories].sort((a, b) => b.createdAt - a.createdAt);
+            if (sorted.length === 0) { DOM.containers.memGrid.innerHTML = `<div class="col-span-full text-center py-16 text-gray-500 bg-white/5 border border-dashed border-white/10 rounded-3xl font-medium">The eternal memory bank is empty.</div>`; return; }
+            DOM.containers.memGrid.innerHTML = sorted.map(m => `
+                <div class="glass-card p-6 lg:p-8 rounded-3xl border border-white/5 break-inside-avoid relative group transition-all">
+                    <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                         <button onclick="deleteDocH('memories', '${m.id}')" class="text-gray-400 hover:text-red-400 bg-black/40 w-10 h-10 flex justify-center items-center rounded-xl border border-white/10 backdrop-blur-md transition-colors"><i class="ph-bold ph-trash text-lg"></i></button>
+                    </div>
+                    <div class="flex items-center gap-2 mb-4 relative z-10"><i class="ph-fill ph-sparkle text-aurora-pink text-sm"></i><div class="text-[10px] uppercase font-bold text-gray-400 tracking-widest">${new Date(m.createdAt).toLocaleDateString()}</div></div>
+                    <div class="text-base text-gray-200 whitespace-pre-wrap leading-relaxed relative z-10 font-medium">${escapeHTML(m.content)}</div>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('form-add-q').addEventListener('submit', async (e) => {
+            e.preventDefault(); if (!currentUser) return;
+            const btn = e.target.querySelector('button'); const originalHTML = btn.innerHTML; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Processing...'; btn.disabled = true;
+            try {
+                const title = document.getElementById('add-q-title').value.trim(); const topic = document.getElementById('add-q-topic').value.trim();
+                const tags = document.getElementById('add-q-tags').value.split(',').map(t => t.trim()).filter(Boolean); const isImportant = document.getElementById('add-q-imp').checked;
+                await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'questions'), { title, topic, tags, isImportant, notes: "", createdAt: Date.now() });
+                e.target.reset(); showToast("Entry materialized in the Vault", "success"); switchTab('vault');
+            } catch (err) { showToast("Failed to materialize", "error"); } finally { btn.innerHTML = originalHTML; btn.disabled = false; }
+        });
+
+        document.getElementById('form-add-todo').addEventListener('submit', async (e) => {
+            e.preventDefault(); if (!currentUser) return;
+            const input = document.getElementById('input-todo'); if (!input.value.trim()) return;
+            try { await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'todos'), { task: input.value.trim(), completed: false, createdAt: Date.now(), dateString: getTodayStr() }); input.value = ''; }
+            catch (e) { showToast("Error adding objective", "error"); }
+        });
+
+        document.getElementById('btn-ai-breakdown').addEventListener('click', async () => {
+            if (!currentUser) return;
+            const input = document.getElementById('input-todo'); const task = input.value.trim();
+            if (!task) { showToast("Define a larger task first to break it down.", "info"); return; }
+            const btn = document.getElementById('btn-ai-breakdown'); const originalHTML = btn.innerHTML; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-xl relative z-10"></i>'; btn.disabled = true;
+            try {
+                const prompt = `You are a productivity expert helping a student prepare for job placements. Break down the following complex task into 3 to 5 small, specific, and actionable sub-tasks. Return ONLY a JSON array of strings. Do not include markdown formatting.\nTask: ${task}`;
+                const response = await callGemini(prompt, true); const steps = JSON.parse(response);
+                if (Array.isArray(steps)) {
+                    for (const step of steps) await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'todos'), { task: step, completed: false, createdAt: Date.now(), dateString: getTodayStr() });
+                    input.value = ''; showToast("Task strategically broken down by AI!", "success");
+                }
+            } catch (err) { console.error("AI Breakdown Error:", err); showToast("AI failed to process the task.", "error"); }
+            finally { btn.innerHTML = originalHTML; btn.disabled = false; }
+        });
+
+        document.getElementById('form-add-mem').addEventListener('submit', async (e) => {
+            e.preventDefault(); if (!currentUser) return;
+            const input = document.getElementById('input-mem'); if (!input.value.trim()) return;
+            const btn = e.target.querySelector('button'); const ogHtml = btn.innerHTML; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin"></i> Committing...'; btn.disabled = true;
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'memories'), { content: input.value.trim(), createdAt: Date.now() });
+                input.value = ''; showToast("Solidified into eternity", "success");
+            } catch (e) { showToast("Failed to commit memory", "error"); } finally { btn.innerHTML = ogHtml; btn.disabled = false; }
+        });
+
+        window.openModal = function (qId) {
+            const q = state.questions.find(x => x.id === qId); if (!q) return;
+            currentEditingQId = qId; DOM.modal.title.textContent = q.title; DOM.modal.topic.textContent = q.topic || 'General'; DOM.modal.textarea.value = q.notes || '';
+            DOM.modal.wrap.classList.remove('hidden');
+            setTimeout(() => { DOM.modal.wrap.classList.replace('opacity-0', 'opacity-100'); DOM.modal.content.classList.replace('scale-95', 'scale-100'); DOM.modal.textarea.focus(); }, 10);
+        };
+
+        window.closeModal = function () {
+            DOM.modal.wrap.classList.replace('opacity-100', 'opacity-0'); DOM.modal.content.classList.replace('scale-100', 'scale-95');
+            setTimeout(() => { DOM.modal.wrap.classList.add('hidden'); currentEditingQId = null; }, 300);
+        };
+
+        DOM.modal.aiBtn.addEventListener('click', async () => {
+            if (!currentUser || !currentEditingQId) return;
+            const q = state.questions.find(x => x.id === currentEditingQId);
+            const btn = DOM.modal.aiBtn; const originalHTML = btn.innerHTML; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-aurora-purple text-lg"></i> Summoning...'; btn.disabled = true;
+            try {
+                const prompt = `You are an expert tutor helping a software engineering student prepare for job placements. Provide a clear, detailed, and accurate explanation for this question. Keep it as plain text suitable for a simple text-area. Use line breaks for readability.\n\nQuestion: ${q.title}\nTopic: ${q.topic || 'General'}\n\nReturn ONLY the content of the answer.`;
+                const answer = await callGemini(prompt);
+                const textarea = DOM.modal.textarea; const separator = '\n\n--- AI Insight ---\n';
+                if (textarea.value.trim() !== '') textarea.value += separator + answer; else textarea.value = answer;
+                await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'questions', currentEditingQId), { notes: textarea.value });
+                showToast("AI Insight successfully channeled", "success");
+            } catch (err) { console.error("AI Gen Error:", err); showToast("Failed to summon AI", "error"); }
+            finally { btn.innerHTML = originalHTML; btn.disabled = false; }
+        });
+
+        DOM.modal.saveBtn.addEventListener('click', async () => {
+            if (!currentUser || !currentEditingQId) return;
+            const btn = DOM.modal.saveBtn; const originalHTML = btn.innerHTML; btn.innerHTML = '<i class="ph-bold ph-spinner animate-spin text-lg"></i> Preserving...'; btn.disabled = true;
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'questions', currentEditingQId), { notes: DOM.modal.textarea.value });
+                showToast("Notes preserved securely", "success"); closeModal();
+            } catch (e) { showToast("Error preserving notes", "error"); } finally { btn.innerHTML = originalHTML; btn.disabled = false; }
+        });
+
+        DOM.modal.wrap.addEventListener('mousedown', (e) => { if (e.target === DOM.modal.wrap) closeModal(); });
+
+        window.toggleImportant = async (id, current) => { if (!currentUser) return; await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'questions', id), { isImportant: !current }); };
+        window.toggleTodo = async (id, current) => { if (!currentUser) return; await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'todos', id), { completed: !current }); };
+        window.deleteDocH = async (col, id) => { if (!currentUser) return; await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, col, id)); showToast("Item erased permanently"); };
+
+        function showToast(msg, type = 'info') {
+            const t = document.getElementById('toast'); document.getElementById('toast-msg').textContent = msg; const icon = document.getElementById('toast-icon');
+            t.className = t.className.replace(/border-l-\w+-\d+/, '');
+            if (type === 'success') { icon.innerHTML = '<i class="ph-fill ph-check-circle text-green-400"></i>'; t.classList.add('border-l-green-500'); }
+            else if (type === 'error') { icon.innerHTML = '<i class="ph-fill ph-warning-circle text-red-400"></i>'; t.classList.add('border-l-red-500'); }
+            else { icon.innerHTML = '<i class="ph-fill ph-info text-aurora-cyan"></i>'; t.classList.add('border-l-aurora-cyan'); }
+            t.classList.remove('translate-y-24', 'opacity-0'); setTimeout(() => t.classList.add('translate-y-24', 'opacity-0'), 3000);
+        }
+
+        function escapeHTML(str) { if (!str) return ''; return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])); }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+            updateSidebarUI();
+        });
+    </script>
+</body>
+
+
+</html>
+
+<!-- #career path finder -->
